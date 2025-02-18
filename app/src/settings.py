@@ -12,10 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-import structlog
-
-from src.common.redis_filter_processor import conditional_dropper
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,7 +39,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "django_structlog.middlewares.RequestMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -106,58 +101,33 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Logging
 LOGGING = {
     'version': 1,
-    "formatters": {
-        # "json_formatter": {
-        #     "()": structlog.stdlib.ProcessorFormatter,
-        #     "processor": structlog.processors.JSONRenderer(),
-        # },
-        "plain_console": {
-            "()": structlog.stdlib.ProcessorFormatter,
-            "processor": structlog.dev.ConsoleRenderer(),
+    'formatters': {
+        'json': {
+            '()': 'src.common.log_formatter.JsonFormatter',
+            'fmt': '%(timestamp)s %(level)s %(name)s %(message)s',
         },
-        # "key_value": {
-        #     "()": structlog.stdlib.ProcessorFormatter,
-        #     "processor": structlog.processors.KeyValueRenderer(key_order=['timestamp', 'level', 'event', 'logger']),
-        # },
     },
     'filters': {
-        'special': {
+        'drop_filtered': {
             '()': 'src.common.log_filters.CustomLogFilter',
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
-        'src': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'filters': ['special']
-        }
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-        }
+            'formatter': 'json',
+            'filters': ['drop_filtered'],
+        },
     },
+    'loggers': {
+        'src': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
 }
-
-structlog.configure(
-    processors=[
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.filter_by_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        conditional_dropper,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.UnicodeDecoder(),
-        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-    ],
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    cache_logger_on_first_use=True,
-)

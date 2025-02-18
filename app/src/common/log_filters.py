@@ -3,13 +3,11 @@ import logging
 from src.common.redis_client import redis_client
 
 
-
 class CustomLogFilter(logging.Filter):
     def filter(self, record):
-        if record.extra.get('filtered'):
-            log_filter = redis_client.get('log_filter')
-            if log_filter is not None:
-                return log_filter in record.message
+        if hasattr(record, 'filtered') and record.filtered:
+            log_filter = redis_client.db.get('log_filter')
+            if log_filter:
+                return log_filter in record.getMessage()
             return False
         return True
-

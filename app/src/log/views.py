@@ -1,12 +1,12 @@
 import json
-import structlog
+import logging
 
 from django.http import JsonResponse
 from django.views import View
 
 from src.common.redis_client import redis_client
 
-logger = structlog.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LogView(View):

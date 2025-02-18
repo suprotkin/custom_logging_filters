@@ -1,6 +1,5 @@
 redis==5.0.4
-structlog==25.1.0
 Django==4.2.19
-structlog==25.1.0
-django-structlog==9.0.1
+python-json-logger==3.2.1
+
 
