@@ -1,4 +1,3 @@
-
 from structlog import DropEvent
 
 from src.common.redis_client import redis_client
@@ -13,7 +12,4 @@ class ConditionalDropper:
                 event_dict["raised"] = "DropEvent"
                 raise DropEvent
 
-
         return event_dict
-
-conditional_dropper = ConditionalDropper()
