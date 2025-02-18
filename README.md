@@ -6,7 +6,16 @@ This log filter implementation is based on the [structlog](https://www.structlog
 
 To avoid the Python circular import issues, you need to keep Redis/LaunchDarkly connection settings separate from the [settings](app/src/settings.py) module.
 Additionally, you can't use variables from `django.conf.settings` to initialize the filters storage client.
+
+
+## Requirements
+This project uses Docker to run the application.
+
 ## Usage
+Use the following command to start containers:
+```bash
+./run.sh start app
+```
 
 By default, the project won’t log any messages where the `filtered` attribute set to `True`. 
 You can change this by specifying certain words to bypass the filter using the following request:
