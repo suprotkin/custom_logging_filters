@@ -1,0 +1,30 @@
+services:
+  app:
+    image: custom-logger
+    container_name: custom-logger
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - 9029:8000
+    volumes:
+      - ./app/:/opt/app
+    depends_on:
+      - redis
+    networks:
+      - default
+
+  redis:
+    image: redis
+    container_name: custom-logger-redis
+    command: redis-server --requirepass redispassword
+    ports:
+      - 10015:6379
+    volumes:
+      - redis_volume:/data
+    networks:
+      - default
+
+volumes:
+  redis_volume:
+
